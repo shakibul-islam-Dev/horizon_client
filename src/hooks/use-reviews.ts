@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { reviewsApi } from '@/lib/api-services';
 
 export function useReviews(itemId: string, page = 1, limit = 10) {
@@ -8,6 +8,8 @@ export function useReviews(itemId: string, page = 1, limit = 10) {
     queryKey: ['reviews', itemId, page, limit],
     queryFn: () => reviewsApi.getByItem(itemId, page, limit),
     enabled: !!itemId,
+    placeholderData: keepPreviousData,
+    staleTime: 2 * 60 * 1000,
   });
 }
 

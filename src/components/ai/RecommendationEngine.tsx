@@ -5,18 +5,13 @@ import { ChevronRight, ChevronLeft, Check, Sparkles } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { aiApi } from '@/lib/api-services';
 import { useCategories } from '@/hooks/use-categories';
+import { useInterestTags } from '@/hooks/use-interest-tags';
 import ItemCard from '@/components/ui/ItemCard';
 import type { Item } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress, ProgressLabel, ProgressValue } from '@/components/ui/progress';
-
-const interestTags = [
-  'Wireless', 'Premium', 'Sustainable', 'Budget-Friendly', 'New Arrivals',
-  'Best Sellers', 'Trending', 'Handmade', 'Vintage', 'Smart Home',
-  'Fitness', 'Outdoor', 'Kitchen', 'Audio', 'Photography',
-];
 
 const analysisMessages = [
   'Analyzing your category preferences...',
@@ -59,6 +54,9 @@ export default function RecommendationEngine() {
 
   const { data: categoriesResponse } = useCategories();
   const categories = categoriesResponse?.data ?? [];
+
+  const { data: interestTagsResponse } = useInterestTags();
+  const interestTags = interestTagsResponse?.data ?? [];
 
   const totalSteps = 5;
 
@@ -139,7 +137,7 @@ export default function RecommendationEngine() {
         </Progress>
       </CardHeader>
 
-      <CardContent className="min-h-[420px]">
+      <CardContent className="min-h-[350px] sm:min-h-[420px]">
         {step === 1 && (
           <div className="animate-in fade-in">
             <h3 className="text-xl font-semibold text-foreground mb-2">What are you looking for?</h3>
@@ -280,11 +278,12 @@ export default function RecommendationEngine() {
         )}
       </CardContent>
 
-      <div className="px-6 py-4 border-t border-border flex items-center justify-between">
+      <div className="px-4 sm:px-6 py-4 border-t border-border flex items-center justify-between">
         {step > 1 && step < 4 ? (
           <Button
             variant="outline"
             onClick={() => setStep(step - 1)}
+            size="sm"
           >
             <ChevronLeft className="h-4 w-4" />
             Back
@@ -293,6 +292,7 @@ export default function RecommendationEngine() {
           <Button
             variant="outline"
             onClick={resetWizard}
+            size="sm"
           >
             <Sparkles className="h-4 w-4" />
             Refine Results
@@ -310,6 +310,7 @@ export default function RecommendationEngine() {
                 setStep(step + 1);
               }
             }}
+            size="sm"
           >
             {step === 3 ? 'Get Recommendations' : 'Continue'}
             <ChevronRight className="h-4 w-4" />

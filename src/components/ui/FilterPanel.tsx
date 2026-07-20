@@ -15,6 +15,8 @@ interface FilterPanelProps {
   onReset: () => void;
   onClose?: () => void;
   categories: { id: string; name: string; slug: string; itemCount: number }[];
+  maxPrice: number;
+  categoryCounts?: Record<string, number>;
 }
 
 export default function FilterPanel({
@@ -29,6 +31,8 @@ export default function FilterPanel({
   onReset,
   onClose,
   categories,
+  maxPrice,
+  categoryCounts = {},
 }: FilterPanelProps) {
   return (
     <div className="flex flex-col gap-6">
@@ -44,7 +48,7 @@ export default function FilterPanel({
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1 rounded-lg hover:bg-accent transition-colors md:hidden"
+              className="p-1 rounded-lg hover:bg-accent transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -93,7 +97,9 @@ export default function FilterPanel({
               }`}
             >
               {cat.name}
-              <span className="ml-1 text-muted-foreground">({cat.itemCount})</span>
+              <span className="ml-1 text-muted-foreground">
+                ({categoryCounts[cat.slug] ?? cat.itemCount ?? 0})
+              </span>
             </button>
           ))}
         </div>
@@ -111,11 +117,11 @@ export default function FilterPanel({
             onChange={(e) =>
               onPriceRangeChange([Number(e.target.value), priceRange[1]])
             }
-            min={0}
-            max={priceRange[1]}
-            className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-            placeholder="Min"
-          />
+          min={0}
+          max={maxPrice}
+          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          placeholder="Min"
+        />
           <span className="text-muted-foreground">-</span>
           <input
             type="number"
@@ -123,22 +129,23 @@ export default function FilterPanel({
             onChange={(e) =>
               onPriceRangeChange([priceRange[0], Number(e.target.value)])
             }
-            min={priceRange[0]}
-            className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-            placeholder="Max"
-          />
-        </div>
-        <input
-          type="range"
-          min={0}
-          max={10000}
-          step={50}
-          value={priceRange[1]}
-          onChange={(e) =>
-            onPriceRangeChange([priceRange[0], Number(e.target.value)])
-          }
-          className="w-full accent-primary"
+          min={priceRange[0]}
+          max={maxPrice}
+          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          placeholder="Max"
         />
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={maxPrice || 10000}
+        step={Math.max(1, Math.round((maxPrice || 10000) / 100))}
+        value={priceRange[1]}
+        onChange={(e) =>
+          onPriceRangeChange([priceRange[0], Number(e.target.value)])
+        }
+        className="w-full accent-primary"
+      />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>${priceRange[0].toLocaleString()}</span>
           <span>${priceRange[1].toLocaleString()}</span>

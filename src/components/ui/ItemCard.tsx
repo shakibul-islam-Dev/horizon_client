@@ -18,14 +18,18 @@ export default function ItemCard({ item }: ItemCardProps) {
 
   return (
     <div className="group h-full flex flex-col bg-card rounded-xl border border-border hover:shadow-lg transition-all duration-300 overflow-hidden">
-      <Link href={`/items/${item.id}`} className="relative h-48 overflow-hidden">
-        <Image
-          src={item.images[0]}
-          alt={item.title}
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+      <Link href={`/items/${item.id}`} className="relative aspect-[4/3] overflow-hidden">
+        {item.images[0] ? (
+          <Image
+            src={item.images[0]}
+            alt={item.title}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-sm">No image</div>
+        )}
         <button
           onClick={(e) => {
             e.preventDefault();

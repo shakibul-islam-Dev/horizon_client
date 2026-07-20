@@ -1,9 +1,15 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { StickyCartButton } from '@/features/cart/StickyCartButton';
+import { CartDrawer } from '@/features/cart/CartDrawer';
 
 export default function CartButtonWrapper() {
-  const router = useRouter();
-  return <StickyCartButton onClick={() => router.push('/cart')} />;
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <StickyCartButton onClick={() => setOpen(true)} />
+      <CartDrawer open={open} onClose={() => setOpen(false)} />
+    </>
+  );
 }

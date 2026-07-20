@@ -4,7 +4,6 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, Mail, Lock } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
 import { useAuth } from '@/lib/auth-context';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -62,11 +61,9 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       await register(name, email, password);
-      toast.success('Account created successfully!');
       router.push('/');
     } catch {
       setServerError('Registration failed. Please try again.');
-      toast.error('Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

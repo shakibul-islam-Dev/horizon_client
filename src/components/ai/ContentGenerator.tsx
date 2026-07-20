@@ -206,14 +206,14 @@ export default function ContentGenerator() {
           ) : (
             <>
               <CardHeader>
-                <div className="flex items-center justify-between w-full">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-3">
                   <div>
-                    <CardTitle>Generated Content</CardTitle>
+                    <CardTitle className="text-lg sm:text-xl">Generated Content</CardTitle>
                     <p className="text-sm text-muted-foreground">
                       {getWordCount(output)} words &middot; {contentType} &middot; {tone} tone
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -222,7 +222,7 @@ export default function ContentGenerator() {
                       title="Regenerate"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
-                      Regenerate
+                      <span className="hidden xs:inline">Regenerate</span>
                     </Button>
                     <Button
                       variant="outline"
@@ -240,7 +240,7 @@ export default function ContentGenerator() {
                       title="Download as text"
                     >
                       <Download className="h-3.5 w-3.5" />
-                      Download
+                      <span className="hidden xs:inline">Download</span>
                     </Button>
                   </div>
                 </div>

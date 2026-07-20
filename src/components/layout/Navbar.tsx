@@ -17,32 +17,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import MobileDrawer from './MobileDrawer';
 import { useCart } from '@/features/cart/cart-context';
+import { CartDrawer } from '@/features/cart/CartDrawer';
 
 const loggedOutRoutes = [
   { href: '/', label: 'Home' },
-  { href: '/explore', label: 'Explore' },
+  { href: '/items', label: 'Items' },
   { href: '/pricing', label: 'Pricing' },
-  { href: '/about', label: 'About' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/help', label: 'Help' },
 ];
 
 const loggedInRoutes = [
   { href: '/', label: 'Home' },
-  { href: '/explore', label: 'Explore' },
+  { href: '/items', label: 'Items' },
   { href: '/pricing', label: 'Pricing' },
-  { href: '/items/add', label: 'Add Item' },
-  { href: '/items/manage', label: 'Manage Items' },
-  { href: '/ai/chat', label: 'AI Tools' },
-  { href: '/about', label: 'About' },
-  { href: '/profile', label: 'Profile' },
+  { href: '/ai/chat', label: 'AI Chat' },
+  { href: '/help', label: 'Help' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 export default function Navbar() {
@@ -50,6 +41,7 @@ export default function Navbar() {
   const { totalItems } = useCart();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
 
   const routes = user ? loggedInRoutes : loggedOutRoutes;
 
@@ -89,14 +81,14 @@ export default function Navbar() {
 
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <Link href="/cart" className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
+              <button onClick={() => setCartOpen(true)} className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
                 <ShoppingCart className="h-5 w-5 text-foreground" />
                 {totalItems > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                     {totalItems}
                   </span>
                 )}
-              </Link>
+              </button>
               <div className="hidden md:flex items-center gap-2">
                 {user ? (
                   <DropdownMenu>
@@ -148,20 +140,13 @@ export default function Navbar() {
                   </>
                 )}
               </div>
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <button
-                      onClick={() => setMobileOpen(true)}
-                      className="md:hidden p-2 rounded-lg hover:bg-secondary transition-colors"
-                      aria-label="Open menu"
-                    />
-                  }
-                >
-                    <Menu className="h-5 w-5 text-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>Menu</TooltipContent>
-              </Tooltip>
+              <button
+                onClick={() => setMobileOpen(true)}
+                className="md:hidden p-2 rounded-lg hover:bg-secondary transition-colors"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5 text-foreground" />
+              </button>
             </div>
           </div>
         </div>
@@ -172,6 +157,7 @@ export default function Navbar() {
         onClose={() => setMobileOpen(false)}
         routes={routes}
       />
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   );
 }

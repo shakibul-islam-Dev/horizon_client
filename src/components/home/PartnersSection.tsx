@@ -1,13 +1,13 @@
-const partners = [
-  { name: 'TechFlow', initials: 'TF' },
-  { name: 'GreenLeaf', initials: 'GL' },
-  { name: 'UrbanStyle', initials: 'US' },
-  { name: 'CraftLab', initials: 'CL' },
-  { name: 'BrightPath', initials: 'BP' },
-  { name: 'NexGen', initials: 'NG' },
-];
+'use client';
+
+import { useAbout } from '@/hooks/use-about';
 
 export default function PartnersSection() {
+  const { data: aboutResponse } = useAbout();
+  const partners = aboutResponse?.data?.partners ?? [];
+
+  if (partners.length === 0) return null;
+
   return (
     <section className="py-20 px-4 bg-secondary/5">
       <div className="max-w-7xl mx-auto text-center">

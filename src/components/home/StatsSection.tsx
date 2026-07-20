@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAbout } from '@/hooks/use-about';
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useAbout } from "@/hooks/use-about";
 
 function formatNumber(value: number): string {
   if (value >= 1000) {
@@ -12,16 +12,29 @@ function formatNumber(value: number): string {
 
 export default function StatsSection() {
   const { data: aboutResponse } = useAbout();
-  const aboutStats = aboutResponse?.data?.statistics ?? [];
-  const stats = aboutStats.map((s) => ({
-    label: s.label,
-    value: parseInt(s.value.replace(/[^0-9]/g, ''), 10) || 0,
-    suffix: s.suffix || s.value.replace(/[0-9]/g, ''),
-  }));
-
-  const [counts, setCounts] = useState(stats.map(() => 0));
+  const [isMounted, setIsMounted] = useState(false);
+  const [counts, setCounts] = useState<number[]>([]);
   const [hasAnimated, setHasAnimated] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Use requestAnimationFrame to defer mounted state to paint, avoiding cascading renders
+    const id = requestAnimationFrame(() => setIsMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const aboutStats = aboutResponse?.data?.statistics ?? [];
+  const statsKey = JSON.stringify(aboutStats);
+
+  // Deeply memoize stats array based on stringified value data
+  const stats = useMemo(() => {
+    return aboutStats.map((s) => ({
+      label: s.label || "Statistic",
+      value: parseInt(s.value?.replace(/[^0-9]/g, "") || "0", 10) || 0,
+      suffix: s.suffix || s.value?.replace(/[0-9]/g, "") || "",
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statsKey]);
 
   const animateCounters = useCallback(() => {
     const duration = 2000;
@@ -30,7 +43,7 @@ export default function StatsSection() {
     function update(currentTime: number) {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
+      const eased = 1 - Math.pow(1 - progress, 3); // Smooth cubic ease-out
 
       setCounts(stats.map((stat) => Math.floor(eased * stat.value)));
 
@@ -43,7 +56,8 @@ export default function StatsSection() {
   }, [stats]);
 
   useEffect(() => {
-    if (stats.length === 0) return;
+    if (!isMounted || stats.length === 0) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !hasAnimated) {
@@ -51,29 +65,34 @@ export default function StatsSection() {
           animateCounters();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+    const currentSection = sectionRef.current;
+    if (currentSection) {
+      observer.observe(currentSection);
     }
 
-    return () => observer.disconnect();
-  }, [hasAnimated, animateCounters, stats.length]);
+    return () => {
+      if (currentSection) {
+        observer.unobserve(currentSection);
+      }
+      observer.disconnect();
+    };
+  }, [hasAnimated, animateCounters, stats.length, isMounted]);
 
-  if (stats.length === 0) return null;
+  // Prevent rendering anything until client-side hydration is complete or if no data exists
+  if (!isMounted || stats.length === 0) return null;
 
   return (
-    <section
-      ref={sectionRef}
-      className="py-20 px-4 bg-secondary/5"
-    >
+    <section ref={sectionRef} className="py-20 px-4 bg-secondary/5">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {stats.map((stat, index) => (
-            <div key={stat.label}>
-              <div className="text-4xl md:text-5xl font-bold text-accent mb-2">
-                {formatNumber(counts[index])}{stat.suffix}
+            <div key={`${stat.label}-${index}`}>
+              <div className="text-4xl md:text-5xl font-bold text-primary mb-2">
+                {formatNumber(counts[index] || 0)}
+                {stat.suffix}
               </div>
               <div className="text-muted-foreground">{stat.label}</div>
             </div>

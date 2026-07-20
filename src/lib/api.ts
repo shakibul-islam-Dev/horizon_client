@@ -9,9 +9,11 @@ interface ApiResponse<T> {
 
 class ApiClient {
   private baseUrl: string;
+  private timeout: number;
 
-  constructor(baseUrl: string) {
+  constructor(baseUrl: string, timeout = 15000) {
     this.baseUrl = baseUrl;
+    this.timeout = timeout;
   }
 
   private async request<T>(
@@ -23,23 +25,37 @@ class ApiClient {
       ...(options.headers as Record<string, string>),
     };
 
-    const res = await fetch(`${this.baseUrl}/api${endpoint}`, {
-      ...options,
-      credentials: 'include',
-      headers,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => null);
-      const message = errorBody?.message || `Request failed with status ${res.status}`;
-      throw new Error(message);
+    try {
+      const res = await fetch(`${this.baseUrl}/api${endpoint}`, {
+        ...options,
+        credentials: 'include',
+        headers,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => null);
+        const message = errorBody?.message || `Request failed with status ${res.status}`;
+        throw new Error(message);
+      }
+
+      if (res.status === 204) {
+        return { success: true, message: 'Success', data: null };
+      }
+
+      return res.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new Error('Request timed out. Please try again.');
+      }
+      throw error;
     }
-
-    if (res.status === 204) {
-      return { success: true, message: 'Success', data: null };
-    }
-
-    return res.json();
   }
 
   async get<T>(endpoint: string): Promise<ApiResponse<T>> {
@@ -69,6 +85,14 @@ class ApiClient {
 
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { method: 'DELETE' });
+  }
+
+  async upload<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    });
   }
 }
 

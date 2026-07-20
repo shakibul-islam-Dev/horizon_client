@@ -4,6 +4,7 @@ import { createContext, useContext, useCallback, type ReactNode } from 'react';
 import { toast } from '@/components/ui/sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { wishlistApi } from '@/lib/api-services';
+import { mapCartItem } from '@/lib/mappers';
 import type { Item } from '@/types';
 
 interface WishlistContextType {
@@ -18,31 +19,7 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 
 function mapWishlistItems(raw: unknown): Item[] {
   if (!Array.isArray(raw)) return [];
-  return raw.map((entry: Record<string, unknown>) => {
-    const rawItem = entry.item as Record<string, unknown> | undefined;
-    return {
-      id: String(rawItem?._id ?? ''),
-      title: String(rawItem?.title ?? ''),
-      shortDescription: String(rawItem?.shortDescription ?? ''),
-      fullDescription: String(rawItem?.fullDescription ?? ''),
-      price: Number(rawItem?.price ?? 0),
-      category: (() => {
-        const cat = rawItem?.category;
-        if (cat && typeof cat === 'object') return String((cat as Record<string, unknown>).slug || '');
-        return String(cat ?? '');
-      })(),
-      images: (rawItem?.images as string[]) || [],
-      rating: Number(rawItem?.rating ?? 0),
-      reviewCount: Number(rawItem?.reviewCount ?? 0),
-      location: String(rawItem?.location ?? ''),
-      seller: typeof rawItem?.author === 'object'
-        ? String((rawItem.author as Record<string, unknown>)?.name ?? '')
-        : String(rawItem?.author ?? ''),
-      createdAt: String(rawItem?.createdAt ?? ''),
-      tags: (rawItem?.tags as string[]) || [],
-      specifications: (rawItem?.specifications as Record<string, string>) || {},
-    } as Item;
-  });
+  return raw.map((entry: Record<string, unknown>) => mapCartItem(entry.item));
 }
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
@@ -50,7 +27,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const { data: wishlistResponse, isLoading } = useQuery({
     queryKey: ['wishlist'],
-    queryFn: () => wishlistApi.get(1, 200),
+    queryFn: () => wishlistApi.get(1, 50),
     retry: false,
   });
 
@@ -58,8 +35,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const addMutation = useMutation({
     mutationFn: wishlistApi.add,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+    onSuccess: (res) => {
+      queryClient.setQueryData(['wishlist'], res);
       toast.success('Added to wishlist');
     },
     onError: (err: Error) => {
@@ -69,8 +46,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const removeMutation = useMutation({
     mutationFn: wishlistApi.remove,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+    onSuccess: (res) => {
+      queryClient.setQueryData(['wishlist'], res);
       toast.success('Removed from wishlist');
     },
     onError: (err: Error) => {
@@ -80,8 +57,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const clearMutation = useMutation({
     mutationFn: wishlistApi.clear,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+    onSuccess: (res) => {
+      queryClient.setQueryData(['wishlist'], res);
       toast.success('Wishlist cleared');
     },
     onError: (err: Error) => {

@@ -4,7 +4,6 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
 import { useAuth } from '@/lib/auth-context';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -50,11 +49,9 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await login(email, password);
-      toast.success('Welcome back!');
       router.push('/');
     } catch {
       setServerError('Invalid email or password');
-      toast.error('Invalid email or password');
     } finally {
       setIsLoading(false);
     }

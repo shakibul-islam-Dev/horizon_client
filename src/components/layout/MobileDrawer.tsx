@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Heart, LogOut, User, ShoppingCart } from 'lucide-react';
@@ -29,10 +29,25 @@ interface MobileDrawerProps {
 export default function MobileDrawer({ open, onClose, routes }: MobileDrawerProps) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const prevPathname = useRef(pathname);
 
   useEffect(() => {
-    onClose();
-  }, [pathname, onClose]);
+    if (prevPathname.current !== pathname && open) {
+      onClose();
+    }
+    prevPathname.current = pathname;
+  }, [pathname, open, onClose]);
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   function isActive(href: string) {
     if (href === '/') return pathname === '/';

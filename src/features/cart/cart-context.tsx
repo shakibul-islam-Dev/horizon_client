@@ -4,6 +4,7 @@ import { createContext, useContext, useCallback, type ReactNode } from 'react';
 import { toast } from '@/components/ui/sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cartApi } from '@/lib/api-services';
+import { mapCartItem } from '@/lib/mappers';
 import type { Item, CartItem } from '@/types';
 
 interface CartContextType {
@@ -24,28 +25,10 @@ function mapCartItems(raw: unknown): CartItem[] {
   const data = raw as Record<string, unknown>;
   const rawItems = data.items as Array<Record<string, unknown>> | undefined;
   if (!Array.isArray(rawItems)) return [];
-  return rawItems.map((ci) => {
-    const rawItem = ci.item as Record<string, unknown> | undefined;
-    return {
-      item: {
-        id: String(rawItem?._id ?? ''),
-        title: String(rawItem?.title ?? ''),
-        shortDescription: '',
-        fullDescription: '',
-        price: Number(rawItem?.price ?? 0),
-        category: '',
-        images: (rawItem?.images as string[]) || [],
-        rating: 0,
-        reviewCount: 0,
-        location: '',
-        seller: '',
-        createdAt: '',
-        tags: [],
-        specifications: {},
-      } as Item,
-      quantity: Number(ci.quantity ?? 1),
-    };
-  });
+  return rawItems.map((ci) => ({
+    item: mapCartItem(ci.item),
+    quantity: Number(ci.quantity ?? 1),
+  }));
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {

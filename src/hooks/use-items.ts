@@ -1,12 +1,14 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { itemsApi } from '@/lib/api-services';
 
 export function useItems(params?: Record<string, string>) {
   return useQuery({
     queryKey: ['items', params],
     queryFn: () => itemsApi.getAll(params),
+    placeholderData: keepPreviousData,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -15,6 +17,7 @@ export function useItem(id: string) {
     queryKey: ['items', id],
     queryFn: () => itemsApi.getById(id),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { SlidersHorizontal, Sparkles, X } from "lucide-react";
+import { SlidersHorizontal, X, Sparkles } from "lucide-react";
 import ItemCard from "@/components/ui/ItemCard";
 import SearchBar from "@/components/ui/SearchBar";
 import FilterPanel from "@/components/ui/FilterPanel";
@@ -13,9 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { useItems } from "@/hooks/use-items";
@@ -45,7 +45,7 @@ const sortItems = (items: Item[], sortBy: string): Item[] => {
   }
 };
 
-export default function ExploreContent() {
+export default function ItemsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -63,6 +63,21 @@ export default function ExploreContent() {
   const [currentPage, setCurrentPage] = useState(
     Number(searchParams.get("page")) || 1,
   );
+
+  // Push state to URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (category) params.set("category", category);
+    if (priceRange[0] > 0) params.set("minPrice", String(priceRange[0]));
+    if (priceRange[1] > 0) params.set("maxPrice", String(priceRange[1]));
+    if (minRating > 0) params.set("rating", String(minRating));
+    if (sortBy !== "popular") params.set("sort", sortBy);
+    if (currentPage > 1) params.set("page", String(currentPage));
+
+    const qs = params.toString();
+    router.replace(`/items${qs ? `?${qs}` : ""}`, { scroll: false });
+  }, [search, category, priceRange, minRating, sortBy, currentPage, router]);
 
   const apiParams: Record<string, string> = {};
   if (search) apiParams.search = search;
@@ -85,13 +100,17 @@ export default function ExploreContent() {
   apiParams.page = String(currentPage);
   apiParams.limit = String(ITEMS_PER_PAGE);
 
-  const { data: apiItemsData, isLoading: itemsLoading } = useItems(apiParams);
+  const {
+    data: apiItemsData,
+    isLoading: itemsLoading,
+    isError,
+    error,
+  } = useItems(apiParams);
   const { data: apiCategoriesData } = useCategories();
 
   const allItems: Item[] = useMemo(() => apiItemsData?.data ?? [], [apiItemsData]);
   const allCategories = apiCategoriesData?.data ?? [];
 
-  // Dynamic max price derived from the currently loaded items
   const dynamicMaxPrice = useMemo(() => {
     if (allItems.length === 0) return 10000;
     const max = Math.max(...allItems.map((i) => i.price || 0));
@@ -107,20 +126,6 @@ export default function ExploreContent() {
     }
     return counts;
   }, [allItems]);
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (search) params.set("search", search);
-    if (category) params.set("category", category);
-    if (priceRange[0] > 0) params.set("minPrice", String(priceRange[0]));
-    if (priceRange[1] > 0) params.set("maxPrice", String(priceRange[1]));
-    if (minRating > 0) params.set("rating", String(minRating));
-    if (sortBy !== "popular") params.set("sort", sortBy);
-    if (currentPage > 1) params.set("page", String(currentPage));
-
-    const qs = params.toString();
-    router.replace(`/explore${qs ? `?${qs}` : ""}`, { scroll: false });
-  }, [search, category, priceRange, minRating, sortBy, currentPage, router]);
 
   const filteredItems = useMemo(() => {
     let result = allItems;
@@ -209,26 +214,23 @@ export default function ExploreContent() {
           >
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-6">
               <Sparkles className="h-4 w-4" />
-              Explore Products
+              Discover Products
             </div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground mb-4">
-              Find What You Need
+              Browse Items
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              Discover unique products from sellers around the world. Quality
-              guaranteed.
+              Explore a curated collection of quality products from trusted
+              sellers around the world.
             </p>
             <div className="max-w-2xl mx-auto">
-              <SearchBar
-                onSearch={handleSearch}
-                placeholder="Search for items..."
-              />
+              <SearchBar onSearch={handleSearch} initialValue={search} />
             </div>
           </motion.div>
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+      <section className="max-w-7xl mx-auto px-4 pb-20">
         <div className="flex gap-8">
           {/* Desktop Sidebar */}
           <aside className="hidden w-64 shrink-0 lg:block">
@@ -281,40 +283,41 @@ export default function ExploreContent() {
                   Filters
                 </button>
 
-                <div className="lg:hidden">
-                  <Select
-                    value={sortBy}
-                    onValueChange={(val) => {
-                      if (val) setSortBy(val);
+                <Select
+                  value={sortBy}
+                  onValueChange={(val) => {
+                    if (val) {
+                      setSortBy(val);
                       setCurrentPage(1);
-                    }}
-                  >
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="popular">Most Popular</SelectItem>
-                      <SelectItem value="newest">Newest</SelectItem>
-                      <SelectItem value="price-low">
-                        Price: Low to High
-                      </SelectItem>
-                      <SelectItem value="price-high">
-                        Price: High to Low
-                      </SelectItem>
-                      <SelectItem value="rating">Highest Rated</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-48 hidden lg:flex">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="popular">Most Popular</SelectItem>
+                    <SelectItem value="newest">Newest</SelectItem>
+                    <SelectItem value="price-low">
+                      Price: Low to High
+                    </SelectItem>
+                    <SelectItem value="price-high">
+                      Price: High to Low
+                    </SelectItem>
+                    <SelectItem value="rating">Highest Rated</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
+            {/* Items Grid */}
             {itemsLoading ? (
               <motion.div
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                {Array.from({ length: 8 }).map((_, i) => (
+                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
                   <div key={i} className="flex flex-col gap-3">
                     <Skeleton className="aspect-[4/3] w-full rounded-xl" />
                     <Skeleton className="h-4 w-3/4" />
@@ -323,15 +326,39 @@ export default function ExploreContent() {
                   </div>
                 ))}
               </motion.div>
+            ) : isError ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center py-20 text-center"
+              >
+                <div className="mb-6 text-6xl opacity-30">⚠️</div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  Failed to load items
+                </h3>
+                <p className="text-muted-foreground max-w-md mb-6">
+                  {error instanceof Error
+                    ? error.message
+                    : "Something went wrong. Please try again."}
+                </p>
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    setCurrentPage(1);
+                    setSearch("");
+                    setCategory("");
+                  }}
+                >
+                  Try Again
+                </Button>
+              </motion.div>
             ) : paginatedItems.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex flex-col items-center justify-center py-20 text-center"
               >
-                <div className="mb-6 text-6xl opacity-30">
-                  <span>🔍</span>
-                </div>
+                <div className="mb-6 text-6xl opacity-30">🔍</div>
                 <h3 className="text-xl font-semibold text-foreground mb-2">
                   No items found
                 </h3>
@@ -380,12 +407,13 @@ export default function ExploreContent() {
               </motion.div>
             )}
 
+            {/* Pagination */}
             {!itemsLoading && totalPages > 1 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="mt-10"
+                className="mt-10 flex justify-center"
               >
                 <Pagination
                   currentPage={currentPage}
@@ -396,7 +424,7 @@ export default function ExploreContent() {
             )}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Mobile Filters */}
       <AnimatePresence>

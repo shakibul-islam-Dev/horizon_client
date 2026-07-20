@@ -14,12 +14,12 @@ export default function ContentGeneratorPage() {
 
         <div className="max-w-5xl mx-auto px-4 pt-16 pb-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-foreground">AI Content Generator</h1>
+            <h1 className="text-xl sm:text-3xl font-bold text-foreground">AI Content Generator</h1>
           </div>
-          <p className="text-muted-foreground text-lg max-w-2xl">
+          <p className="text-muted-foreground text-sm sm:text-lg max-w-2xl">
             Generate compelling content for your listings and marketing
           </p>
         </div>

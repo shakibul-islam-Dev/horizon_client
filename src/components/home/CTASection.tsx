@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function CTASection() {
   return (
@@ -23,7 +23,7 @@ export default function CTASection() {
             <Button
               variant="outline"
               size="lg"
-              className="text-base px-8 py-6 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+              className="text-base px-8 py-6 border-primary-foreground text-base hover:bg-primary-foreground hover:text-primary"
             >
               Become a Seller
             </Button>

@@ -50,7 +50,7 @@ export default function CategoriesSection() {
     <section className="py-20 px-4 bg-secondary/5">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-3xl font-bold text-center mb-12">Browse Categories</h2>
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {allCategories.map((category) => {
             const Icon = iconMap[category.icon] || Laptop;
             return (

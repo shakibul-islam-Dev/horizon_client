@@ -5,31 +5,32 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
 
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <Skeleton className="h-8 w-48 mb-6" />
+      <Skeleton className="h-64 w-full mb-4" />
+      <Skeleton className="h-64 w-full" />
+    </div>
+  );
+}
+
 export function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (isLoading) return;
+    if (!user) {
       router.push('/auth/login');
-    }
-    if (!isLoading && user && adminOnly && user.role !== 'admin') {
+    } else if (adminOnly && user.role !== 'admin') {
       router.push('/');
     }
   }, [user, isLoading, router, adminOnly]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background p-8">
-        <Skeleton className="h-8 w-48 mb-6" />
-        <Skeleton className="h-64 w-full mb-4" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
-  }
-
-  if (!user) return null;
-  if (adminOnly && user.role !== 'admin') return null;
+  if (isLoading) return <LoadingSkeleton />;
+  if (!user) return <LoadingSkeleton />;
+  if (adminOnly && user.role !== 'admin') return <LoadingSkeleton />;
 
   return <>{children}</>;
 }

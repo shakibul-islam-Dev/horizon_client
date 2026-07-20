@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useCallback, useMemo, useEffect, useSyncExternalStore, type ReactNode } from 'react';
+import { createContext, useContext, useCallback, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -18,23 +18,36 @@ function getStoredTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+let listeners: Array<() => void> = [];
+
+function emitChange() {
+  for (const listener of listeners) listener();
+}
+
 function subscribeTheme(callback: () => void) {
-  window.addEventListener('storage', callback);
-  return () => window.removeEventListener('storage', callback);
+  listeners = [...listeners, callback];
+
+  // Listen for native storage events from other tabs
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === 'theme') callback();
+  };
+  window.addEventListener('storage', onStorage);
+
+  return () => {
+    listeners = listeners.filter((l) => l !== callback);
+    window.removeEventListener('storage', onStorage);
+  };
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = useSyncExternalStore(subscribeTheme, getStoredTheme, () => 'light' as Theme);
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-  }, [theme]);
-
   const toggleTheme = useCallback(() => {
     const next = theme === 'light' ? 'dark' : 'light';
     localStorage.setItem('theme', next);
     document.documentElement.classList.toggle('dark', next === 'dark');
-    window.dispatchEvent(new Event('storage'));
+    // Notify same-tab subscribers (native storage event only fires in other tabs)
+    emitChange();
   }, [theme]);
 
   const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
