@@ -1,4 +1,4 @@
-const API_BASE = (process.env.NEXT_PUBLIC_URL || 'http://localhost:5000').trim();
+const API_BASE = (process.env.NEXT_PUBLIC_URL || 'https://horizon-server-1m7m.onrender.com').trim();
 
 interface ApiResponse<T> {
   success: boolean;

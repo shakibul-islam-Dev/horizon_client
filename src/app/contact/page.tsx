@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const BASE_URL = (process.env.NEXT_PUBLIC_URL || 'http://localhost:5000').trim();
+const BASE_URL = (process.env.NEXT_PUBLIC_URL || 'https://horizon-server-1m7m.onrender.com').trim();
 
 const subjects = ['General', 'Support', 'Partnership', 'Feedback'];
 
