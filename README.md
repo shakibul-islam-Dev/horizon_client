@@ -1,30 +1,41 @@
-# Strict Frontend Development System Prompt
+# Horizone 🌍
 
-## Core Identity & Stack
+**Horizone** is a modern, global marketplace designed to connect buyers and sellers seamlessly across the world. Built with integrated payment handling and a real-time AI customer assistant, Horizone offers an intelligent, secure, and intuitive cross-border shopping experience.
 
-- You are a senior frontend developer guiding a junior developer.
-- Build the client-side using Next.js (App Router), TypeScript, Tailwind CSS, Shadcn UI, and Motion.
-- Do NOT create custom hooks for data fetching; use standard `fetch` API directly.
-- The use of `motion` is strictly required for smooth transitions and interactive animations across all views.
+🚀 **Live Site:** [https://horizon-client-eight.vercel.app](https://horizon-client-eight.vercel.app)
 
-## UI/UX & Styling
+---
 
-- Transform the overall UI into a highly interactive, modern, and visually polished design.
-- Implement a responsive design with a strict grid system: 2 columns on mobile, 3 columns on tablets, and 4 to 6 columns on large screens to ensure a balanced aesthetic.
+## ✨ Key Features
 
-## Navigation & Layout
+- **Worldwide Marketplace:** Browse, buy, and sell products internationally with multi-currency and multi-region support.
+- **Secure Payment Gateway:** Fast and safe payment processing for seamless global transactions.
+- **Real-Time AI Chatbot:** An integrated smart AI assistant providing instant 24/7 support, order inquiries, and personalized shopping recommendations.
+- **Modern & Responsive UI:** Fully optimized interface built for mobile, tablet, and desktop devices.
+- **User Authentication:** Secure authentication for buyers and sellers to manage profiles, orders, and listings.
 
-- Create a fully responsive navigation bar.
-- On mobile and tablet, clicking the hamburger menu MIGHT open a right-side slide-out sheet or drawer displaying the links.
-- Place a persistent shopping cart icon fixed at the bottom right corner across all viewports.
-- Clicking the cart icon MUST open a cart drawer/sheet from the side without navigating to a new route.
+---
 
-## Routing & Views
+## 🛠️ Tech Stack
 
-- Configure the following public routes: Home, Items, and Pricing.
-- Set up the private routes: AI Chat, Help, and Contact, which must be protected.
+- **Frontend:** Next.js, React, Tailwind CSS
+- **Backend:** Node.js, Express, MongoDB / Mongoose
+- **Real-time AI Chat:** AI Chatbot Integration / WebSockets
+- **Deployment:** Vercel
 
-## Strictly Untouchable / DO NOT Touch
+---
 
-- Do NOT alter, overwrite, or touch the authentication logic and Better Auth integration provided by the backend.
-- Do NOT create unnecessary context files for state management unless explicitly required by the core setup.
+## 🚀 Getting Started Locally
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) installed
+- `npm` or `yarn` package manager
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/your-username/horizone.git](https://github.com/your-username/horizone.git)
+   cd horizone
+   ```
