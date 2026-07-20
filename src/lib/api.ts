@@ -7,6 +7,31 @@ interface ApiResponse<T> {
   meta?: Record<string, unknown>;
 }
 
+let cachedToken: string | null = null;
+let tokenExpiresAt = 0;
+
+async function getJwtToken(): Promise<string | null> {
+  if (typeof window !== "undefined") {
+    if (cachedToken && tokenExpiresAt > Date.now()) {
+      return cachedToken;
+    }
+    try {
+      const res = await fetch("/api/auth/jwt");
+      if (res.ok) {
+        const body = await res.json();
+        if (body.success && body.token) {
+          cachedToken = body.token;
+          tokenExpiresAt = Date.now() + 45 * 60 * 1000; // 45 minutes
+          return cachedToken;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch JWT token", e);
+    }
+  }
+  return null;
+}
+
 class ApiClient {
   private baseUrl: string;
   private timeout: number;
@@ -20,8 +45,10 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
+    const token = await getJwtToken();
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...(options.headers as Record<string, string>),
     };
 
