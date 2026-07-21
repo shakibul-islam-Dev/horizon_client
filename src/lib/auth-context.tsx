@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useCallback, useState, type ReactNode } from 'react';
 import { toast } from '@/components/ui/sonner';
 import { authClient } from '@/lib/auth-client';
 import type { User } from '@/types';
@@ -11,6 +11,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  demoLogin: () => void;
   isLoading: boolean;
 }
 
@@ -29,8 +30,9 @@ function mapSessionUser(sessionUser: Record<string, unknown>): User {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, isPending } = authClient.useSession();
+  const [demoUser, setDemoUser] = useState<User | null>(null);
 
-  const user = session?.user ? mapSessionUser(session.user as Record<string, unknown>) : null;
+  const user = demoUser ?? (session?.user ? mapSessionUser(session.user as Record<string, unknown>) : null);
 
   const login = useCallback(async (email: string, password: string) => {
     const { error } = await authClient.signIn.email({
@@ -67,13 +69,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const demoLogin = useCallback(() => {
+    setDemoUser({
+      id: 'demo-user-001',
+      name: 'Demo User',
+      email: 'demo@horizon.com',
+      avatar: '',
+      role: 'user',
+      joinDate: new Date().toISOString(),
+    });
+    toast.success('Logged in as Demo User');
+  }, []);
+
   const logout = useCallback(async () => {
+    setDemoUser(null);
     await authClient.signOut();
     toast.success('Logged out successfully');
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, loginWithGoogle, logout, isLoading: isPending }}>
+    <AuthContext.Provider value={{ user, login, register, loginWithGoogle, logout, demoLogin, isLoading: isPending }}>
       {children}
     </AuthContext.Provider>
   );

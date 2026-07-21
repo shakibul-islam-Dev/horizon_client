@@ -17,7 +17,7 @@ interface FormErrors {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, demoLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
@@ -58,10 +58,8 @@ export default function LoginPage() {
   }
 
   function handleDemoLogin() {
-    setEmail('demo@horizon.com');
-    setPassword('demo123');
-    setErrors({});
-    setServerError('');
+    demoLogin();
+    router.push('/');
   }
 
   return (
